@@ -111,6 +111,16 @@ object PhantomBuild extends Build {
   val PerformanceTest = config("perf").extend(Test)
   def performanceFilter(name: String): Boolean = name endsWith "PerformanceTest"
 
+  val bintrayPublishing: Seq[Def.Setting[_]] = Seq(
+    publishMavenStyle := false,
+    bintray.BintrayKeys.bintrayOrganization := Some("websudos"),
+    bintray.BintrayKeys.bintrayRepository := "oss-releases",
+    publishArtifact in Test := false,
+    pomIncludeRepository := { _ => true},
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0"))
+  )
+
+
   val sharedSettings: Seq[Def.Setting[_]] = Defaults.coreDefaultSettings ++ Seq(
     organization := "com.websudos",
     version := "1.8.2",

@@ -30,14 +30,19 @@
 package com.websudos.phantom.zookeeper
 
 import java.net.InetSocketAddress
+import scala.concurrent.duration._
 
 import com.websudos.phantom.connectors.{CassandraProperties, DefaultCassandraManager}
 import com.websudos.util.testing._
 import com.websudos.util.zookeeper.ZooKeeperInstance
+import org.scalatest.concurrent.PatienceConfiguration
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
 
 class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterAll with CassandraSetup {
+
+  implicit def patience: PatienceConfiguration.Timeout = timeout(5 seconds)
+
   val instance = new ZooKeeperInstance("/cassandra")
 
   override def beforeAll(): Unit = {
@@ -52,7 +57,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     instance.stop()
   }
 
-  ignore should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
+  it should "correctly use the default localhost:2181 connector address if no environment variable has been set" in {
     System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "0.0.0.0"
@@ -61,7 +66,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
 
   }
 
-  ignore should "use the values from the environment variable if they are set" in {
+  it should "use the values from the environment variable if they are set" in {
     System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:4902")
 
     TestTable.manager.defaultZkAddress.getHostName shouldEqual "localhost"
@@ -69,7 +74,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     TestTable.manager.defaultZkAddress.getPort shouldEqual 4902
   }
 
-  ignore should "return the default if the environment property is in invalid format" in {
+  it should "return the default if the environment property is in invalid format" in {
 
     System.setProperty(CassandraProperties.ZookeeperEnvironmentString, "localhost:invalidint")
 
@@ -78,7 +83,7 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     TestTable.manager.defaultZkAddress.getPort shouldEqual 2181
   }
 
-  ignore should "correctly retrieve the Cassandra series of ports from the Zookeeper cluster" in {
+  it should "correctly retrieve the Cassandra series of ports from the Zookeeper cluster" in {
     instance.client.getData(TestTable.zkPath, watch = false) successful {
       res => {
         info("Ports correctly retrieved from Cassandra.")
@@ -87,12 +92,12 @@ class ZookeeperConnectorTest extends FlatSpec with Matchers with BeforeAndAfterA
     }
   }
 
-  ignore should "match the Zookeeper connector string to the spawned instance settings" in {
+  it should "match the Zookeeper connector string to the spawned instance settings" in {
     System.setProperty(CassandraProperties.ZookeeperEnvironmentString, instance.zookeeperConnectString)
     TestTable.manager.defaultZkAddress shouldEqual instance.address
   }
 
-  ignore should "correctly retrieve the Sequence of InetSocketAddresses from zookeeper" in {
+  it should "correctly retrieve the Sequence of InetSocketAddresses from zookeeper" in {
 
     TestTable.manager.store.hostnamePortPairs.successful {
       res => {
